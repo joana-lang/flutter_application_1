@@ -12,11 +12,36 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscure = true; //control para mostrar o ocultar contraseña
   //crear el cerebro de la animacion
   StateMachineController? _controller;
-  //SMI: State Machine Input/ entrada de maquina de estado
+  //SMI: State Machine Input/ entrada de maquina de estado, erebro de la animacion
   SMIBool? _isChecking;
   SMIBool? _isHandsUp;
   SMITrigger? _trigSuccess;
   SMITrigger? _trigFail;
+
+  //2.1. crear las variables para FocusNode
+  final _emailFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+
+  //2.2 Listeners (oyentes/chismosos)
+  @override
+  void initState() {
+    super.initState();
+
+    _emailFocus.addListener(() {
+      if (_emailFocus.hasFocus) {
+        // Verificar que no sea nulo
+        if (_isHandsUp != null) {
+          // Manos abajo en el email
+          _isHandsUp?.change(false);
+        }
+      }
+    });
+
+    _passwordFocus.addListener(() {
+      // Manos arriba en password
+      _isHandsUp?.change(_passwordFocus.hasFocus);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
               //para separar
               const SizedBox(height: 10),
               TextField(
+                focusNode: _emailFocus,
                 onChanged: (value) {
                   if (_isHandsUp != null) {
                     //no tapes los ojos al ver email
@@ -77,6 +103,8 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 10), //para salto de linea
               //Campo de texto para contraseña
               TextField(
+                //2.3 asignar foco al campo de txt
+                focusNode: _passwordFocus,
                 onChanged: (value) {
                   if (_isChecking != null) {
                     //no tapes los ojos al ver email
@@ -113,5 +141,13 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // 2.4 liberar espacio en memoria
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
+    super.dispose();
   }
 }
