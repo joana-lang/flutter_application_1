@@ -12,6 +12,11 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _obscure = true; //control para mostrar o ocultar contraseña
   //crear el cerebro de la animacion
+
+  //para recordas contraseña-------parte de la tarea
+  //remember me
+  bool _rememberMe = false;
+
   StateMachineController? _controller;
   //SMI: State Machine Input/ entrada de maquina de estado, erebro de la animacion
   SMIBool? _isChecking;
@@ -24,6 +29,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   //3.3 Timer para detener la mirada al dejar de escribir
   Timer? _typingDebounce;
+
+  //para aplicar el ----Lock UI interaction during animation to prevent rapid spam clicks
+  //evitar spam
+  bool _isLoginLocked = false;
 
   //2.1. crear las variables para FocusNode
   final _emailFocus = FocusNode();
@@ -52,6 +61,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   //4.4 Dar accion al boton
   void _onLogin() {
+    //bloquear si ya se hizo el click ---- Si el botón ya está bloqueado, sal de _onLogin y no hagas nada.
+    //evitar spam
+    if (_isLoginLocked) return;
+    //ativar bloqueo------- Acabo de presionar Login, así que ahora bloquéalo
+    //evitar spam, lo de arriba
+
+    setState(() {
+      _isLoginLocked = true;
+    });
     // de lo que escribio el usuario, quitar espacios en blanco
     // ignore: unused_local_variable
     final email = _emailCtrl.text.trim();
@@ -67,6 +85,10 @@ class _LoginScreenState extends State<LoginScreen> {
       emailError = eError;
       passError = pError;
     });
+
+    //para que la contraseña y el correo se eliminen de la interfaz despues de dar click en login
+    //_emailCtrl.clear();
+    //_passCtrl.clear();
 
     //4.8 cerrar teclao y bajar las manos
     FocusScope.of(context).unfocus(); //quita el foco
@@ -126,10 +148,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     _controller = StateMachineController.fromArtboard(
                       artboard,
                       'Login Machine',
+                      onStateChange: (stateMachineName, stateName) {
+                        // Este es el "escucha" oficial de Rive que pide la tarea.
+                        // 'stateName' te dice exactamente en qué estado está el oso (ej. 'idle', 'success', 'fail').
+
+                        // Cuando el oso termina su animación y regresa al estado de reposo ('idle' o el estado inicial):
+                        if (_isLoginLocked &&
+                            (stateName == 'idle' || stateName == 'State 1')) {
+                          if (!mounted) return;
+                          setState(() {
+                            _isLoginLocked =
+                                false; // Desbloqueamos el botón exactamente al terminar
+                          });
+                        }
+                      },
                     );
 
                     //verificar que inicio bien
                     if (_controller == null) return;
+
                     //agrega el controlador al escenario/tablero
                     artboard.addController(_controller!);
                     //vinvulamos variables
@@ -169,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   _typingDebounce?.cancel();
                   //crear nuevo timer
                   _typingDebounce = Timer(const Duration(seconds: 3), () {
-                    //si se cierra la pantalla uita el contador
+                    //si se cierra la pantalla quita el contador
                     if (!mounted) return;
                     //mirada  neutra
                     _isChecking?.change(false);
@@ -226,17 +263,32 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 10),
-              //4.12 texto olvide la contraseña
-              SizedBox(
-                width: size.width,
-                child: const Text(
-                  'forgot password',
-                  //alinear a la derecha
-                  textAlign: TextAlign.right,
-                  style: TextStyle(decoration: TextDecoration.underline),
-                ),
-              ),
+              //aqui inicia el checkbox de remember pass---tarea
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _rememberMe,
+                        onChanged: (value) {
+                          setState(() {
+                            _rememberMe = value ?? false;
+                          });
+                        },
+                      ),
+                      const Text('Remember me'),
+                    ],
+                  ),
+                  const Text(
+                    'forgot password',
+                    style: TextStyle(
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ],
+              ), // aqui termina el boton de remember pass
               const SizedBox(height: 10),
               //boton de login
               MaterialButton(
@@ -246,7 +298,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                onPressed: _onLogin,
+
+                //se cambio esta linea de codigo ----s el onPressed que está dentro de MaterialButton, el botón rosa de login.
+                //evitar spam
+                onPressed: _isLoginLocked ? null : _onLogin,
                 child: Text('login', style: TextStyle(color: Colors.white)),
               ),
               const SizedBox(height: 10),
