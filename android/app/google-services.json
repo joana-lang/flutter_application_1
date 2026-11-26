@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1006367362825",
+    "project_id": "rive-animated-login-4ebdc",
+    "storage_bucket": "rive-animated-login-4ebdc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1006367362825:android:48d66278ab77a8cbff8dd8",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1006367362825-u6q539ra3s2jofhgq3o03jo6rsh4medp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5h-yEOCCmA_hlNgWV8RPRcaGrcZeErQs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1006367362825-u6q539ra3s2jofhgq3o03jo6rsh4medp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
