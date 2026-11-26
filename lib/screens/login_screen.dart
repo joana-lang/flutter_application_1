@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/screens/products_screen.dart';
 import 'package:flutter_application_1/screens/signup_screen.dart';
 import 'package:rive/rive.dart';
 
@@ -94,39 +95,48 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       _trigSuccess?.fire();
       await Future.delayed(const Duration(milliseconds: 900));
+      if (!mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const ProductsScreen()),
+        (route) => false,
+      );
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      String? newEmailError;
-      String? newPassError;
+      String message;
 
       switch (e.code) {
         case 'user-not-found':
-          newEmailError = 'No existe cuenta con este correo';
-          break;
         case 'wrong-password':
         case 'invalid-credential':
-          newPassError = 'Correo o contraseña incorrectos';
-          break;
         case 'invalid-email':
-          newEmailError = 'Correo inválido';
+          message = 'Credenciales no válidas';
           break;
         case 'too-many-requests':
-          newPassError = 'Demasiados intentos, intenta más tarde';
+          message = 'Demasiados intentos, intenta más tarde';
           break;
         default:
-          newPassError = e.message ?? 'Error al iniciar sesión';
+          message = e.message ?? 'Error al iniciar sesión';
       }
 
       setState(() {
-        emailError = newEmailError;
-        passError = newPassError;
+        emailError = null;
+        passError = null;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
       _trigFail?.fire();
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        passError = 'Error de conexión';
+        emailError = null;
+        passError = null;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error de conexión')),
+      );
       _trigFail?.fire();
     } finally {
       Future.delayed(const Duration(seconds: 2), () {
